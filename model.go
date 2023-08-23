@@ -31,30 +31,32 @@ func newListKeyMap() *ListKeyMap {
     }
 }
 
-type Mode int 
+type mode int 
 
 const (
-    List Mode = 0
-    OpenAsProject Mode = 1
+    OpenAsDirectory mode = 0
+    OpenAsProject mode = 1
 )
 
 type model struct {
 	list list.Model
     currentPath string
     keys *ListKeyMap
-    mode Mode
+    mode mode
     depth int
+    settings Settings
 }
 
-func NewModel(path string) model {
+func NewModel(settings Settings) model {
     keys := newListKeyMap()
-    list := NewDirectoryList(path, keys)
+    list := NewDirectoryList(settings, keys)
     return model{
         list: list,
-        currentPath: path,
+        currentPath: "",
         keys: keys,
-        mode: List,
+        mode: OpenAsDirectory,
         depth: 0,
+        settings: settings,
     }
 }
 
@@ -69,29 +71,40 @@ func (mod model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
         case key.Matches(msg, mod.keys.selectDirectory):
             item, ok := mod.list.SelectedItem().(item)
             if ok {
-                if mod.mode == List {
-                    mod.currentPath = filepath.Join(mod.currentPath, item.title) 
+                if mod.mode == OpenAsDirectory {
+                    // we store the absolute path of the item in the description
+                    mod.currentPath = item.desc
                     mod.list.SetItems(NewDirectoryListItems(mod.currentPath))
                     mod.depth++
                 } else if mod.mode == OpenAsProject {
-                    return mod, openEditor(filepath.Join(mod.currentPath, item.title))
+                    // we store the absolute path of the item in the description
+                    return mod, openEditor(item.desc)
                 }
             }
 
         case key.Matches(msg, mod.keys.goBack):
-            mod.currentPath = filepath.Join(mod.currentPath, "..")
-            mod.list.SetItems(NewDirectoryListItems(mod.currentPath))
+            if mod.depth <= 0 {
+                return mod, nil
+            }
+
             mod.depth--
+            if mod.depth == 0 {
+                mod.currentPath = ""
+                mod.list.SetItems(NewDirectoryListItems(mod.settings.Sources...))
+            } else {
+                mod.currentPath = filepath.Join(mod.currentPath, "..")
+                mod.list.SetItems(NewDirectoryListItems(mod.currentPath))
+            }
         }
 	case tea.WindowSizeMsg:
 		h, v := docStyle.GetFrameSize()
 		mod.list.SetSize(msg.Width-h, msg.Height-v)
 	}
 
-    if mod.depth == 1 {
+    if mod.depth == mod.settings.DefaultOpenDepth {
         mod.mode = OpenAsProject
     } else {
-        mod.mode = List
+        mod.mode = OpenAsDirectory
     }
 
 	var cmd tea.Cmd

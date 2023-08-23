@@ -12,13 +12,13 @@ var docStyle = lipgloss.NewStyle().Margin(1, 2)
 
 
 func main() {
-    path := "/home/zack/repos/"
+    settings := LoadSettings()
 
-    mod := NewModel(path)
+    mod := NewModel(settings)
 
-	p := tea.NewProgram(mod, tea.WithAltScreen())
+	program := tea.NewProgram(mod, tea.WithAltScreen())
 
-	if _, err := p.Run(); err != nil {
+	if _, err := program.Run(); err != nil {
 		fmt.Println("Error running program:", err)
 		os.Exit(1)
 	}
