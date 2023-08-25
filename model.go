@@ -67,6 +67,11 @@ func (m model) Init() tea.Cmd {
 func (mod model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+        if mod.list.FilterState() == list.Filtering {
+            break
+        }
+
+        //fmt.Println("2nd switch")
         switch { 
         case key.Matches(msg, mod.keys.selectDirectory):
             item, ok := mod.list.SelectedItem().(item)
@@ -83,6 +88,7 @@ func (mod model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
             }
 
         case key.Matches(msg, mod.keys.goBack):
+            mod.list.ResetFilter()
             if mod.depth <= 0 {
                 return mod, nil
             }
