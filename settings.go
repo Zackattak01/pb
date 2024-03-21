@@ -12,6 +12,7 @@ const SettingsPath = "pb/settings.json"
 type Settings struct {
     Sources []string
     SourceTraversalDepth int
+    ProjectOpenCommand string
     DefaultOpenDepth int
     DisplayAbsolutePath bool
 }
@@ -31,6 +32,10 @@ func LoadSettings() Settings {
     }
 
     var settings Settings
-    json.Unmarshal(contents, &settings)
+    err = json.Unmarshal(contents, &settings)
+    if err != nil {
+        log.Fatal("Error reading settings file")
+    }
+
     return settings 
 }

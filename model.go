@@ -1,10 +1,9 @@
 package main
 
 import (
-	"fmt"
-	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
@@ -83,7 +82,7 @@ func (mod model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                     mod.depth++
                 } else if mod.mode == OpenAsProject {
                     // we store the absolute path of the item in the description
-                    return mod, openEditor(item.desc)
+                    return mod, openProject(item.title, item.desc, mod.settings.ProjectOpenCommand)
                 }
             }
 
@@ -122,16 +121,40 @@ func (mod model) View() string {
 	return docStyle.Render(mod.list.View())
 }
 
-type editorFinishedMsg struct{ err error }
+type projectClosedMsg struct{ err error }
 
-func openEditor(path string) tea.Cmd {
-	editor := os.Getenv("EDITOR")
-	if editor == "" {
-		editor = "nvim"
-	}
+func openProject(name, path, command string) tea.Cmd {
+    parsedCommand := parseCommand(command, strings.NewReplacer("$projectName", name, "$projectPath", path))
 
-	c := exec.Command(editor, "-c", fmt.Sprintf("cd %s", path)) //nolint:gosec
+    c := exec.Command(parsedCommand[0], parsedCommand[1:]...)
+
 	return tea.ExecProcess(c, func(err error) tea.Msg {
-		return editorFinishedMsg{err}
+		return projectClosedMsg{err}
 	})
+}
+
+func parseCommand(command string, variables *strings.Replacer) []string {
+    command = variables.Replace(command)
+    seperatedCommand := make([]string, 0, 5)
+    lastStrEnd := 0
+    openQuote := rune(0)
+    
+    for i, c := range command {
+        if c == '\'' || c == '"' {
+            if openQuote == c {
+                openQuote = rune(0)
+            } else {
+                openQuote = c
+            }
+        }
+
+        if openQuote == rune(0) && c == ' ' {
+            seperatedCommand = append(seperatedCommand, command[lastStrEnd:i])
+            lastStrEnd = i + 1
+        }
+    }
+    if lastStrEnd < len(command) {
+        seperatedCommand = append(seperatedCommand, command[lastStrEnd:])
+    }
+    return seperatedCommand
 }
