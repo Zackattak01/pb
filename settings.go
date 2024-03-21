@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 	"path"
 )
@@ -17,25 +16,23 @@ type Settings struct {
     DisplayAbsolutePath bool
 }
 
-func LoadSettings() Settings {
+func LoadSettings() (*Settings, error) {
     configDir, err := os.UserConfigDir()
-
     if err != nil {
-        log.Fatal("Could not get config dir")
+        return nil, err
     }
 
     settingsPath := path.Join(configDir, SettingsPath)
     contents, err := os.ReadFile(settingsPath)
-
     if err != nil {
-        log.Fatal("Error reading settings file")
+        return nil, err
     }
 
     var settings Settings
     err = json.Unmarshal(contents, &settings)
     if err != nil {
-        log.Fatal("Error reading settings file")
+        return nil, err
     }
 
-    return settings 
+    return &settings, nil 
 }

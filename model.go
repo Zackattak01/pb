@@ -70,7 +70,6 @@ func (mod model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
             break
         }
 
-        //fmt.Println("2nd switch")
         switch { 
         case key.Matches(msg, mod.keys.selectDirectory):
             item, ok := mod.list.SelectedItem().(item)
