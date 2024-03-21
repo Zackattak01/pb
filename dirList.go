@@ -10,7 +10,7 @@ import (
 )
 
 func NewDirectoryList(settings Settings, keys *ListKeyMap) list.Model {
-    list := list.New(NewDirectoryListItems(settings.Sources...), createDelegate(settings), 0, 0)
+    list := list.New(NewDirectoryListItems(settings.SourceTraversalDepth, settings.Sources...), createDelegate(settings), 0, 0)
     list.Title = "Projects"
     list.InfiniteScrolling = true
     list.AdditionalShortHelpKeys = func() []key.Binding {
@@ -25,8 +25,8 @@ func NewDirectoryList(settings Settings, keys *ListKeyMap) list.Model {
     return list 
 }
 
-func NewDirectoryListItems(paths ...string) []list.Item {
-    directories := getDirectories(paths...)
+func NewDirectoryListItems(traversalDepth int, paths ...string) []list.Item {
+    directories := getDirectories(traversalDepth, paths...)
     items := make([]list.Item, len(directories))
 
     for i, dir := range directories { 
@@ -42,21 +42,32 @@ type directory struct {
 }
 
 
-func getDirectories(paths ...string) []directory {
-    // create empty slice with default cap of 10
+func getDirectories(traversalDepth int, paths ...string) []directory {
     directories := make([]directory, 0, 10)
+    traversePaths := make([]string, len(paths))
+    copy(traversePaths, paths)
 
-    for _, path := range paths {
-        contents, err := os.ReadDir(path)
-        if err != nil {
-            log.Fatalf("Could not read files from path: %s", paths)
-        }
-
-        for _, file := range contents {
-            if file.IsDir() {
-                 directories = append(directories, directory{name: file.Name(), path: filepath.Join(path, file.Name())})
+    for i:= 0;  i < traversalDepth + 1;  i++ {
+        newPaths := make([]string, 0, len(traversePaths)) 
+        for _, path := range traversePaths {
+            contents, err := os.ReadDir(path)
+            if err != nil {
+                log.Fatalf("Could not read files from path: %s", paths)
+            }
+            
+            for _, file := range contents {
+                if file.IsDir() {
+                    filePath := filepath.Join(path, file.Name())
+                   if i == traversalDepth {
+                       directories = append(directories, directory{name: file.Name(), path: filePath})
+                   } else {
+                       newPaths = append(newPaths, filePath)
+                   }
+                }
             }
         }
+
+        traversePaths = newPaths
     }
 
     return directories

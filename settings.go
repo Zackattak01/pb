@@ -11,6 +11,7 @@ const SettingsPath = "pb/settings.json"
 
 type Settings struct {
     Sources []string
+    SourceTraversalDepth int
     DefaultOpenDepth int
     DisplayAbsolutePath bool
 }

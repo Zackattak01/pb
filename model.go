@@ -79,7 +79,7 @@ func (mod model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                 if mod.mode == OpenAsDirectory {
                     // we store the absolute path of the item in the description
                     mod.currentPath = item.desc
-                    mod.list.SetItems(NewDirectoryListItems(mod.currentPath))
+                    mod.list.SetItems(NewDirectoryListItems(0, mod.currentPath))
                     mod.depth++
                 } else if mod.mode == OpenAsProject {
                     // we store the absolute path of the item in the description
@@ -96,10 +96,10 @@ func (mod model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
             mod.depth--
             if mod.depth == 0 {
                 mod.currentPath = ""
-                mod.list.SetItems(NewDirectoryListItems(mod.settings.Sources...))
+                mod.list.SetItems(NewDirectoryListItems(mod.settings.SourceTraversalDepth, mod.settings.Sources...))
             } else {
                 mod.currentPath = filepath.Join(mod.currentPath, "..")
-                mod.list.SetItems(NewDirectoryListItems(mod.currentPath))
+                mod.list.SetItems(NewDirectoryListItems(0, mod.currentPath))
             }
         }
 	case tea.WindowSizeMsg:
