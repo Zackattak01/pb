@@ -16,7 +16,7 @@ type item struct {
 
 func (i item) Title() string       { return i.title }
 func (i item) Description() string { return i.desc }
-func (i item) FilterValue() string { return i.title }
+func (i item) FilterValue() string { return i.title + " " + i.desc }
 
 type ListKeyMap struct {
     selectDirectory key.Binding
@@ -81,6 +81,7 @@ func (mod model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                     mod.depth++
                 } else if mod.mode == OpenAsProject {
                     // we store the absolute path of the item in the description
+                    mod.list.FilterInput.SetValue("")
                     return mod, openProject(item.title, item.desc, mod.settings.ProjectOpenCommand)
                 }
             }
