@@ -138,23 +138,40 @@ func parseCommand(command string, variables *strings.Replacer) []string {
     seperatedCommand := make([]string, 0, 5)
     lastStrEnd := 0
     openQuote := rune(0)
+    processQuote := false
     
     for i, c := range command {
         if c == '\'' || c == '"' {
             if openQuote == c {
                 openQuote = rune(0)
+                processQuote = true
             } else {
                 openQuote = c
             }
         }
 
         if openQuote == rune(0) && c == ' ' {
-            seperatedCommand = append(seperatedCommand, command[lastStrEnd:i])
+            var arg string
+            if processQuote {
+                arg = command[lastStrEnd+1:i-1]
+                processQuote = false
+            } else {
+                arg = command[lastStrEnd:i]
+            }
+
+            seperatedCommand = append(seperatedCommand, arg)
             lastStrEnd = i + 1
         }
     }
     if lastStrEnd < len(command) {
-        seperatedCommand = append(seperatedCommand, command[lastStrEnd:])
+        var arg string
+        if processQuote {
+            arg = command[lastStrEnd+1:len(command)-1]
+        } else {
+            arg = command[lastStrEnd:]
+        }
+
+        seperatedCommand = append(seperatedCommand, arg)
     }
     return seperatedCommand
 }
