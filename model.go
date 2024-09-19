@@ -118,14 +118,25 @@ func (mod model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (mod model) View() string {
-	return docStyle.Render(mod.list.View())
+    space := (1.0/3.0) * float64(mod.list.Width())
+    mod.list.SetWidth(int(space));
+    
+    style := docStyle.Copy().Align(lipgloss.Left).Width(int(space)).Margin(0, int(space), 0, int(space)).Border(lipgloss.BlockBorder(), false, true, false, true)
+    
+	return style.Render(mod.list.View())
 }
 
 type projectClosedMsg struct{ err error }
 
-func openProject(name, path, command string) tea.Cmd {
-    parsedCommand := parseCommand(command, strings.NewReplacer("$projectName", name, "$projectPath", path))
+func openProject(name, path, defaultCommand string) tea.Cmd {
+    command := defaultCommand
 
+    projectConfig, err := LoadProjectConfig(path)
+    if err == nil {
+        command = projectConfig.ProjectOpenCommand
+    }
+
+    parsedCommand := parseCommand(command, strings.NewReplacer("$projectName", name, "$projectPath", path))
     c := exec.Command(parsedCommand[0], parsedCommand[1:]...)
 
 	return tea.ExecProcess(c, func(err error) tea.Msg {

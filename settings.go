@@ -3,10 +3,11 @@ package main
 import (
 	"encoding/json"
 	"os"
-	"path"
+	"path/filepath"
 )
 
 const SettingsPath = "pb/settings.json"
+const ProjectConfigFile = ".pb.json"
 
 type Settings struct {
     Sources []string
@@ -16,13 +17,17 @@ type Settings struct {
     DisplayAbsolutePath bool
 }
 
+type ProjectConfig struct {
+    ProjectOpenCommand string
+}
+
 func LoadSettings() (*Settings, error) {
     configDir, err := os.UserConfigDir()
     if err != nil {
         return nil, err
     }
 
-    settingsPath := path.Join(configDir, SettingsPath)
+    settingsPath := filepath.Join(configDir, SettingsPath)
     contents, err := os.ReadFile(settingsPath)
     if err != nil {
         return nil, err
@@ -35,4 +40,20 @@ func LoadSettings() (*Settings, error) {
     }
 
     return &settings, nil 
+}
+
+func LoadProjectConfig(projectDir string) (*ProjectConfig, error) {
+    configPath := filepath.Join(projectDir, ProjectConfigFile)
+    contents, err := os.ReadFile(configPath)
+    if err != nil {
+        return nil, err
+    }
+
+    var config ProjectConfig
+    err = json.Unmarshal(contents, &config)
+    if err != nil {
+        return nil, err
+    }
+
+    return &config, nil 
 }
