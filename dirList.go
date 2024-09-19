@@ -10,7 +10,7 @@ import (
 )
 
 func NewDirectoryList(settings Settings, keys *ListKeyMap) list.Model {
-    list := list.New(NewDirectoryListItems(settings.SourceTraversalDepth, settings.Sources...), createDelegate(settings), 0, 0)
+    list := list.New(NewDirectoryListItems(settings.Sources...), createDelegate(settings), 0, 0)
     list.Title = "Projects"
     list.InfiniteScrolling = true
     list.AdditionalShortHelpKeys = func() []key.Binding {
@@ -25,8 +25,8 @@ func NewDirectoryList(settings Settings, keys *ListKeyMap) list.Model {
     return list 
 }
 
-func NewDirectoryListItems(traversalDepth int, paths ...string) []list.Item {
-    directories := getDirectories(traversalDepth, paths...)
+func NewDirectoryListItems(sources ...Source) []list.Item {
+    directories := getDirectories(sources...)
     items := make([]list.Item, len(directories))
 
     for i, dir := range directories { 
@@ -42,32 +42,38 @@ type directory struct {
 }
 
 
-func getDirectories(traversalDepth int, paths ...string) []directory {
+func getDirectories(sources ...Source) []directory {
     directories := make([]directory, 0, 10)
-    traversePaths := make([]string, len(paths))
-    copy(traversePaths, paths)
+    //copy(traversePaths, paths)
 
-    for i:= 0;  i < traversalDepth + 1;  i++ {
-        newPaths := make([]string, 0, len(traversePaths)) 
-        for _, path := range traversePaths {
-            contents, err := os.ReadDir(path)
-            if err != nil {
-                log.Fatalf("Could not read files from path: %s", paths)
-            }
-            
-            for _, file := range contents {
-                if file.IsDir() {
-                    filePath := filepath.Join(path, file.Name())
-                   if i == traversalDepth {
-                       directories = append(directories, directory{name: file.Name(), path: filePath})
-                   } else {
-                       newPaths = append(newPaths, filePath)
-                   }
+    // yes there are 4 for loops here
+    for _, source := range sources {
+        sourcePaths := make([]string, 0, 20)
+        sourcePaths = append(sourcePaths, source.Path)
+
+        for i:= 0;  i < source.TraversalDepth + 1;  i++ {
+            newPaths := make([]string, 0, len(sourcePaths)) 
+            for _, path := range sourcePaths {
+                contents, err := os.ReadDir(path)
+                if err != nil {
+                    log.Fatalf("Could not read files from path: %s", sources)
+                }
+
+                for _, file := range contents {
+                    if file.IsDir() {
+                        filePath := filepath.Join(path, file.Name())
+                        if i == source.TraversalDepth {
+                            directories = append(directories, directory{name: file.Name(), path: filePath})
+                        } else {
+                            newPaths = append(newPaths, filePath)
+                        }
+                    }
                 }
             }
+
+            sourcePaths = newPaths
         }
 
-        traversePaths = newPaths
     }
 
     return directories

@@ -9,9 +9,13 @@ import (
 const SettingsPath = "pb/settings.json"
 const ProjectConfigFile = ".pb.json"
 
+type Source struct {
+    Path string
+    TraversalDepth int
+}
+
 type Settings struct {
-    Sources []string
-    SourceTraversalDepth int
+    Sources []Source
     ProjectOpenCommand string
     DefaultOpenDepth int
     DisplayAbsolutePath bool
