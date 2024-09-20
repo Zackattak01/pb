@@ -6,28 +6,35 @@ PB is not just for simply browsing projects in a single directory.  It is capabl
 
 ## Config
 PB looks for config settings in a file called settings.json located in the pb subdirectory of your OS's config folder.  On linux this is usually ~/.config/pb/settings.json
-<br><br>
-The following options are available:
+
+### Options
+`Source.Path`: The path to start searching for directories in. For example `/home/user/repos`
+
+`Source.TraversalDepth`: Can be any number. `0` matches directoriees by `/home/user/repos/*` while `1` matches directories by `/home/user/repos/*/*`
+
+`ProjectOpenCommand`: Set the command that will be used to open projects.
+
+`DefaultOpenDepth`: Can be any number. `0` will cause the first selection to open a project.  `1` while allow users to select a folder than select a project to open
+
+`DisplayAbsolutePath`: Determines wether the absolute path will be displayed alongside the project name
+
+### Example
 
 ```json
+
 {
-    "comment": "Where to find project folders",
     "Sources": [
-        "/home/user/repos",
-        "/home/user/repos/php/wordpress"
+        {
+            "Path": "/home/user/repos",
+            "TraversalDepth": 1
+        },
+        {
+            "Path": "/home/user/school",
+            "TraversalDepth": 0
+        }
     ],
-
-    "comment": "How many subdirectory levels to traverse before collecting the project folders.  Value of 0 fetches directories of the pattern /home/user/repos/* and 1 the pattern /home/user/repos/*/*",
-    "SourceTraversalDepth": 1,
-
-    "comment": "The command to execute when a project is opened.  Two variables are provided in the form of $projectName and $projectPath which contain the values described",
-    "ProjectOpenCommand": "tmux new-session -s $projectName -A -c $projectPath nvim .",
-
-    "comment1": "How many subdirectories should the user be allowed to traverse before executing the project open command",
-    "comment2": "Value of 0 will cause the first item selected to open as a project. Value of 1 will traversal one directory down before opening as project.  Items can be opened as directories regardless of depth by using the hotkey",
+    "ProjectOpenCommand": "tmux new-session -s $projectName -A -c $projectPath 'nvim .'",
     "DefaultOpenDepth": 0,
-
-    "comment": "Whether or not the absolute path of the project should be displayed alongside its name"
     "DisplayAbsolutePath": true
 }
 ```
