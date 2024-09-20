@@ -12,7 +12,7 @@ PB looks for config settings in a file called settings.json located in the pb su
 
 `Source.TraversalDepth`: Can be any number. `0` matches directoriees by `/home/user/repos/*` while `1` matches directories by `/home/user/repos/*/*`
 
-`ProjectOpenCommand`: Set the command that will be used to open projects.
+`ProjectOpenCommand`: Set the command that will be used to open projects. `$projectName` and `$projectPath` are available as variables
 
 `DefaultOpenDepth`: Can be any number. `0` will cause the first selection to open a project.  `1` while allow users to select a folder than select a project to open
 
