@@ -82,7 +82,7 @@ func (mod model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                     mod.depth++
                 } else if mod.mode == OpenAsProject {
                     // we store the absolute path of the item in the description
-                    mod.list.FilterInput.SetValue("")
+                    mod.list.ResetFilter()
                     return mod, openProject(item.title, item.desc, mod.settings.ProjectOpenCommand)
                 }
             }
