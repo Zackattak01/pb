@@ -119,10 +119,27 @@ func (mod model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (mod model) View() string {
-    space := (1.0/3.0) * float64(mod.list.Width())
-    mod.list.SetWidth(int(space));
+    originalWidth := mod.list.Width()
     
-    style := docStyle.Copy().Align(lipgloss.Left).Width(int(space)).Margin(0, int(space), 0, int(space)).Border(lipgloss.BlockBorder(), false, true, false, true)
+    largestItemWidth := 0
+    
+    for _, i := range mod.list.Items() {
+        item := i.(item)
+        
+        if len(item.desc) > largestItemWidth {
+            largestItemWidth = len(item.desc)
+            
+        }
+    }
+    largestItemWidth += 4
+
+    mod.list.SetWidth(largestItemWidth)
+    
+    marginLen := (originalWidth - largestItemWidth) / 2
+    style := docStyle.Copy().Align(lipgloss.Left).Width(largestItemWidth).Margin(0, marginLen)
+
+    mod.list.Styles.TitleBar.Width(largestItemWidth).AlignHorizontal(lipgloss.Center)
+    mod.list.Styles.StatusBar.Width(largestItemWidth).AlignHorizontal(lipgloss.Center)
     
 	return style.Render(mod.list.View())
 }

@@ -44,7 +44,6 @@ type directory struct {
 
 func getDirectories(sources ...Source) []directory {
     directories := make([]directory, 0, 10)
-    //copy(traversePaths, paths)
 
     // yes there are 4 for loops here
     for _, source := range sources {
