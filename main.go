@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/lipgloss"
 )
 
-var docStyle = lipgloss.NewStyle().Margin(1, 2)
+var docStyle = lipgloss.NewStyle()
 
 
 func main() {

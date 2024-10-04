@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/v2/key"
+	"github.com/charmbracelet/bubbles/v2/list"
 )
 
 func NewDirectoryList(settings Settings, keys *ListKeyMap) list.Model {

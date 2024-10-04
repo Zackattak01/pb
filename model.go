@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/bubbles/v2/key"
+	"github.com/charmbracelet/bubbles/v2/list"
+	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -60,8 +60,8 @@ func NewModel(settings Settings) model {
     }
 }
 
-func (m model) Init() tea.Cmd {
-	return nil
+func (mod model) Init() (tea.Model, tea.Cmd) {
+    return mod, nil
 }
 
 func (mod model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -136,11 +136,11 @@ func (mod model) View() string {
     mod.list.SetWidth(largestItemWidth)
     
     marginLen := (originalWidth - largestItemWidth) / 2
-    style := docStyle.Copy().Align(lipgloss.Left).Width(largestItemWidth).Margin(0, marginLen)
+    style := lipgloss.NewStyle().Width(largestItemWidth).Margin(0, marginLen)
 
-    mod.list.Styles.TitleBar.Width(largestItemWidth).AlignHorizontal(lipgloss.Center)
-    mod.list.Styles.StatusBar.Width(largestItemWidth).AlignHorizontal(lipgloss.Center)
-    
+
+    mod.list.Styles.TitleBar = mod.list.Styles.TitleBar.Width(largestItemWidth).AlignHorizontal(lipgloss.Center)
+    mod.list.Styles.StatusBar = mod.list.Styles.StatusBar.Width(largestItemWidth).AlignHorizontal(lipgloss.Center)
 	return style.Render(mod.list.View())
 }
 
