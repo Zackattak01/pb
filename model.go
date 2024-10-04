@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -61,6 +62,20 @@ func NewModel(settings Settings) model {
 }
 
 func (mod model) Init() (tea.Model, tea.Cmd) {
+    if len(os.Args) < 2 {
+        return mod, nil
+    }
+
+    query := os.Args[1]
+
+    for _, val := range mod.list.Items() {
+        item, ok := val.(item)
+        if ok && strings.EqualFold(item.title, query) {
+            return mod, openProject(item.title, item.desc, mod.settings.ProjectOpenCommand)
+        }
+    }
+    
+    mod.list.SetFilterText(query)
     return mod, nil
 }
 
@@ -138,10 +153,10 @@ func (mod model) View() string {
     marginLen := (originalWidth - largestItemWidth) / 2
     style := lipgloss.NewStyle().Width(largestItemWidth).Margin(0, marginLen)
 
-
     mod.list.Styles.TitleBar = mod.list.Styles.TitleBar.Width(largestItemWidth).AlignHorizontal(lipgloss.Center)
     mod.list.Styles.StatusBar = mod.list.Styles.StatusBar.Width(largestItemWidth).AlignHorizontal(lipgloss.Center)
-	return style.Render(mod.list.View())
+     
+    return style.Render(mod.list.View())
 }
 
 type projectClosedMsg struct{ err error }
@@ -192,6 +207,7 @@ func parseCommand(command string, variables *strings.Replacer) []string {
             lastStrEnd = i + 1
         }
     }
+
     if lastStrEnd < len(command) {
         var arg string
         if processQuote {
