@@ -163,14 +163,19 @@ type projectClosedMsg struct{ err error }
 
 func openProject(name, path, defaultCommand string) tea.Cmd {
     command := defaultCommand
+    variables := strings.NewReplacer("$projectName", name, "$projectPath", path)
 
     projectConfig, err := LoadProjectConfig(path)
     if err == nil {
+        variables = strings.NewReplacer("$projectName", name, "$projectPath", path, "$defaultCommand", variables.Replace(command))
         command = projectConfig.ProjectOpenCommand
     }
 
-    parsedCommand := parseCommand(command, strings.NewReplacer("$projectName", name, "$projectPath", path))
+    parsedCommand := parseCommand(command, variables)
     c := exec.Command(parsedCommand[0], parsedCommand[1:]...)
+    c.Env = os.Environ()
+    c.Env = append(c.Env, "PB_NAME=" + name)
+    c.Env = append(c.Env, "PB_PATH=" + path)
 
 	return tea.ExecProcess(c, func(err error) tea.Msg {
 		return projectClosedMsg{err}
