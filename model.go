@@ -46,9 +46,10 @@ type model struct {
     mode mode
     depth int
     settings Settings
+    options Options
 }
 
-func NewModel(settings Settings) model {
+func NewModel(settings Settings, options Options) model {
     keys := newListKeyMap()
     list := NewDirectoryList(settings, keys)
     return model{
@@ -58,24 +59,37 @@ func NewModel(settings Settings) model {
         mode: OpenAsDirectory,
         depth: 0,
         settings: settings,
+        options: options,
     }
 }
 
 func (mod model) Init() (tea.Model, tea.Cmd) {
-    if len(os.Args) < 2 {
-        return mod, nil
-    }
-
-    query := os.Args[1]
-
-    for _, val := range mod.list.Items() {
-        item, ok := val.(item)
-        if ok && strings.EqualFold(item.title, query) {
-            return mod, openProject(item.title, item.desc, mod.settings.ProjectOpenCommand)
+    argCount := len(mod.options.PositionalArguments)
+    if mod.options.CreateTempProject {
+        title := "tmp"
+        if argCount >= 1 {
+            title = mod.options.PositionalArguments[0]
         }
+
+        path := "."
+        if  argCount >= 2 {
+            path = mod.options.PositionalArguments[1]
+        }
+
+        return mod, openProject(title, path, mod.settings.ProjectOpenCommand)
+    } else if argCount == 1 {
+        query := mod.options.PositionalArguments[0]
+
+        for _, val := range mod.list.Items() {
+            item, ok := val.(item)
+            if ok && strings.EqualFold(item.title, query) {
+                return mod, openProject(item.title, item.desc, mod.settings.ProjectOpenCommand)
+            }
+        }
+
+        mod.list.SetFilterText(query)
     }
     
-    mod.list.SetFilterText(query)
     return mod, nil
 }
 

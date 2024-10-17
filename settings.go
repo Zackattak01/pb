@@ -25,6 +25,15 @@ type ProjectConfig struct {
     ProjectOpenCommand string
 }
 
+type Options struct {
+    PositionalArguments []string
+    CreateTempProject bool
+}
+
+func newOptions() Options {
+    return Options{CreateTempProject: false, PositionalArguments: make([]string, 0)}
+}
+
 func LoadSettings() (*Settings, error) {
     configDir, err := os.UserConfigDir()
     if err != nil {
@@ -60,4 +69,17 @@ func LoadProjectConfig(projectDir string) (*ProjectConfig, error) {
     }
 
     return &config, nil 
+}
+
+func ParseOptions(args []string) (*Options, error) {
+    options := newOptions()
+    for _, arg := range args {
+        if arg == "-t" || arg == "--temp" {
+            options.CreateTempProject = true
+        } else {
+            options.PositionalArguments = append(options.PositionalArguments, arg)
+        }
+    }
+
+    return &options, nil
 }

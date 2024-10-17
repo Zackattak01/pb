@@ -17,7 +17,12 @@ func main() {
         logFatalError("Error reading settings:", err)
     }
 
-    mod := NewModel(*settings)
+    options, err := ParseOptions(os.Args[1:])
+    if err != nil {
+        logFatalError("Error parsing options:", err)
+    }
+
+    mod := NewModel(*settings, *options)
 
 	program := tea.NewProgram(mod, tea.WithAltScreen())
 
