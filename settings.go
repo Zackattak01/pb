@@ -28,10 +28,11 @@ type ProjectConfig struct {
 type Options struct {
     PositionalArguments []string
     CreateTempProject bool
+    QuitOnProjectExit bool
 }
 
 func newOptions() Options {
-    return Options{CreateTempProject: false, PositionalArguments: make([]string, 0)}
+    return Options{CreateTempProject: false, QuitOnProjectExit: false, PositionalArguments: make([]string, 0)}
 }
 
 func LoadSettings() (*Settings, error) {
@@ -76,6 +77,8 @@ func ParseOptions(args []string) (*Options, error) {
     for _, arg := range args {
         if arg == "-t" || arg == "--temp" {
             options.CreateTempProject = true
+        } else if arg == "-q" || arg == "-q" {
+            options.QuitOnProjectExit = true;
         } else {
             options.PositionalArguments = append(options.PositionalArguments, arg)
         }

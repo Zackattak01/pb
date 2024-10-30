@@ -95,6 +95,10 @@ func (mod model) Init() (tea.Model, tea.Cmd) {
 
 func (mod model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+    case projectClosedMsg:
+        if mod.options.QuitOnProjectExit {
+            return mod, tea.Quit
+        }
 	case tea.KeyMsg:
         if mod.list.FilterState() == list.Filtering {
             break
