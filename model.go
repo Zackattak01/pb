@@ -96,7 +96,7 @@ func (mod model) Init() (tea.Model, tea.Cmd) {
 func (mod model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
     case projectClosedMsg:
-        if mod.options.QuitOnProjectExit {
+        if mod.options.QuitOnProjectExit || msg.err != nil {
             return mod, tea.Quit
         }
 	case tea.KeyMsg:
