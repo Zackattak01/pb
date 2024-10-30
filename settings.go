@@ -77,7 +77,7 @@ func ParseOptions(args []string) (*Options, error) {
     for _, arg := range args {
         if arg == "-t" || arg == "--temp" {
             options.CreateTempProject = true
-        } else if arg == "-q" || arg == "-q" {
+        } else if arg == "-q" || arg == "--quit" || arg == "--quit-on-close" {
             options.QuitOnProjectExit = true;
         } else {
             options.PositionalArguments = append(options.PositionalArguments, arg)
