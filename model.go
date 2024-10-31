@@ -1,8 +1,6 @@
 package main
 
 import (
-	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -76,14 +74,14 @@ func (mod model) Init() (tea.Model, tea.Cmd) {
             path = mod.options.PositionalArguments[1]
         }
 
-        return mod, openProject(title, path, mod.settings.ProjectOpenCommand)
+        return mod, OpenProject(title, path, mod.settings.ProjectOpenCommand)
     } else if argCount == 1 {
         query := mod.options.PositionalArguments[0]
 
         for _, val := range mod.list.Items() {
             item, ok := val.(item)
             if ok && strings.EqualFold(item.title, query) {
-                return mod, openProject(item.title, item.desc, mod.settings.ProjectOpenCommand)
+                return mod, OpenProject(item.title, item.desc, mod.settings.ProjectOpenCommand)
             }
         }
 
@@ -95,7 +93,7 @@ func (mod model) Init() (tea.Model, tea.Cmd) {
 
 func (mod model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-    case projectClosedMsg:
+    case ProjectClosedMsg:
         if mod.options.QuitOnProjectExit || msg.err != nil {
             return mod, tea.Quit
         }
@@ -116,7 +114,7 @@ func (mod model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                 } else if mod.mode == OpenAsProject {
                     // we store the absolute path of the item in the description
                     mod.list.ResetFilter()
-                    return mod, openProject(item.title, item.desc, mod.settings.ProjectOpenCommand)
+                    return mod, OpenProject(item.title, item.desc, mod.settings.ProjectOpenCommand)
                 }
             }
 
@@ -175,71 +173,4 @@ func (mod model) View() string {
     mod.list.Styles.StatusBar = mod.list.Styles.StatusBar.Width(largestItemWidth).AlignHorizontal(lipgloss.Center)
      
     return style.Render(mod.list.View())
-}
-
-type projectClosedMsg struct{ err error }
-
-func openProject(name, path, defaultCommand string) tea.Cmd {
-    command := defaultCommand
-    variables := strings.NewReplacer("$projectName", name, "$projectPath", path)
-
-    projectConfig, err := LoadProjectConfig(path)
-    if err == nil {
-        variables = strings.NewReplacer("$projectName", name, "$projectPath", path, "$defaultCommand", variables.Replace(command))
-        command = projectConfig.ProjectOpenCommand
-    }
-
-    parsedCommand := parseCommand(command, variables)
-    c := exec.Command(parsedCommand[0], parsedCommand[1:]...)
-    c.Env = os.Environ()
-    c.Env = append(c.Env, "PB_NAME=" + name)
-    c.Env = append(c.Env, "PB_PATH=" + path)
-
-	return tea.ExecProcess(c, func(err error) tea.Msg {
-		return projectClosedMsg{err}
-	})
-}
-
-func parseCommand(command string, variables *strings.Replacer) []string {
-    command = variables.Replace(command)
-    seperatedCommand := make([]string, 0, 5)
-    lastStrEnd := 0
-    openQuote := rune(0)
-    processQuote := false
-    
-    for i, c := range command {
-        if c == '\'' || c == '"' {
-            if openQuote == c {
-                openQuote = rune(0)
-                processQuote = true
-            } else {
-                openQuote = c
-            }
-        }
-
-        if openQuote == rune(0) && c == ' ' {
-            var arg string
-            if processQuote {
-                arg = command[lastStrEnd+1:i-1]
-                processQuote = false
-            } else {
-                arg = command[lastStrEnd:i]
-            }
-
-            seperatedCommand = append(seperatedCommand, arg)
-            lastStrEnd = i + 1
-        }
-    }
-
-    if lastStrEnd < len(command) {
-        var arg string
-        if processQuote {
-            arg = command[lastStrEnd+1:len(command)-1]
-        } else {
-            arg = command[lastStrEnd:]
-        }
-
-        seperatedCommand = append(seperatedCommand, arg)
-    }
-    return seperatedCommand
 }
