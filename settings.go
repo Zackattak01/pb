@@ -9,6 +9,8 @@ import (
 const SettingsPath = "pb/settings.json"
 const ProjectConfigFile = ".pb.json"
 
+const indent = "    "
+
 type Source struct {
     Path string
     TraversalDepth int
@@ -70,6 +72,21 @@ func LoadProjectConfig(projectDir string) (*ProjectConfig, error) {
     }
 
     return &config, nil 
+}
+
+func WriteProjectConfig(dir string, config ProjectConfig) error {
+    jsonString, err := json.MarshalIndent(config, "", indent)
+    if err != nil {
+        return err
+    }
+
+    path := filepath.Join(dir, ProjectConfigFile)
+    err = os.WriteFile(path, jsonString, 0700)
+    if err != nil {
+        return err
+    }
+    
+    return nil
 }
 
 func ParseOptions(args []string) (*Options, error) {
