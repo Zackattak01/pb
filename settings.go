@@ -11,6 +11,8 @@ const ProjectConfigFile = ".pb.json"
 
 const indent = "    "
 
+var TempPath = filepath.Join(os.TempDir(), "pb")
+
 type Source struct {
     Path string
     TraversalDepth int
@@ -55,6 +57,8 @@ func LoadSettings() (*Settings, error) {
         return nil, err
     }
 
+    // add an additional source so tmp projects can be recovered
+    settings.Sources = append(settings.Sources, Source{Path: TempPath, TraversalDepth: 0})
     return &settings, nil 
 }
 
