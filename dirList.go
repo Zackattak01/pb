@@ -55,7 +55,11 @@ func getDirectories(sources ...Source) []directory {
             for _, path := range sourcePaths {
                 contents, err := os.ReadDir(path)
                 if err != nil {
-                    log.Fatalf("Could not read files from path: %s", sources)
+                    // dont throw an error if the temp path cant be read
+                    if path == TempPath {
+                        continue
+                    }
+                    log.Fatalf("Could not read files from path: %s", source)
                 }
 
                 for _, file := range contents {

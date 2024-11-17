@@ -9,6 +9,10 @@ import (
 const SettingsPath = "pb/settings.json"
 const ProjectConfigFile = ".pb.json"
 
+const indent = "    "
+
+var TempPath = filepath.Join(os.TempDir(), "pb")
+
 type Source struct {
     Path string
     TraversalDepth int
@@ -53,6 +57,8 @@ func LoadSettings() (*Settings, error) {
         return nil, err
     }
 
+    // add an additional source so tmp projects can be recovered
+    settings.Sources = append(settings.Sources, Source{Path: TempPath, TraversalDepth: 0})
     return &settings, nil 
 }
 
@@ -70,6 +76,21 @@ func LoadProjectConfig(projectDir string) (*ProjectConfig, error) {
     }
 
     return &config, nil 
+}
+
+func WriteProjectConfig(dir string, config ProjectConfig) error {
+    jsonString, err := json.MarshalIndent(config, "", indent)
+    if err != nil {
+        return err
+    }
+
+    path := filepath.Join(dir, ProjectConfigFile)
+    err = os.WriteFile(path, jsonString, 0700)
+    if err != nil {
+        return err
+    }
+    
+    return nil
 }
 
 func ParseOptions(args []string) (*Options, error) {

@@ -3,12 +3,43 @@ package main
 import (
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea/v2"
 )
 
 type ProjectClosedMsg struct{ err error }
+
+func OpenTempProject(name, path, defaultCommand string) tea.Cmd {
+    path, _ = filepath.Abs(path)
+    variables := getVariableReplacer(name, path);
+    command := substituteVariables(defaultCommand, variables)
+
+    // write a project config to a temp dir so that PB can recover the temp sessions
+    tempDir, err := getTempProjectDir(name)
+    if err == nil {
+        WriteProjectConfig(tempDir, ProjectConfig{ProjectOpenCommand: command})
+    }
+
+    return execProject(name, path, command)
+}
+
+func getTempProjectDir(name string) (string, error) {
+    tmpFolder := filepath.Join(os.TempDir(), "pb")
+    if _, err := os.Stat(tmpFolder); err != nil {
+        if err := os.Mkdir(tmpFolder, 0700); err != nil {
+            return "", err
+        }
+    }
+
+    tmpProjFolder := filepath.Join(tmpFolder, name)
+    if err := os.Mkdir(tmpProjFolder, 0700); err != nil {
+        return "", err
+    }
+
+    return tmpProjFolder, nil
+}
 
 func OpenProject(name, path, defaultCommand string) tea.Cmd {
     command := defaultCommand

@@ -74,7 +74,7 @@ func (mod model) Init() (tea.Model, tea.Cmd) {
             path = mod.options.PositionalArguments[1]
         }
 
-        return mod, OpenProject(title, path, mod.settings.ProjectOpenCommand)
+        return mod, OpenTempProject(title, path, mod.settings.ProjectOpenCommand)
     } else if argCount == 1 {
         query := mod.options.PositionalArguments[0]
 
